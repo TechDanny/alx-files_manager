@@ -1,6 +1,9 @@
 import sha1 from 'sha1';
 import dbClient from '../utils/db';
+import Queue from 'bull';
 
+
+const userQueue = new Queue('userQueue', 'redis://127.0.0.1:6379');
 
 class UsersController {
   static postNew(request, response) {
