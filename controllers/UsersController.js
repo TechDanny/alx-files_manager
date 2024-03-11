@@ -1,6 +1,8 @@
-import sha1 from 'sha1';
-import dbClient from '../utils/db';
-import Queue from 'bull';
+const sha1 = require('sha1');
+const dbClient = require('../utils/db');
+const ObjectID = require('mongodb');
+const Queue = require('bull');
+const redisClient = require('../utils/redis');
 
 
 const userQueue = new Queue('userQueue', 'redis://127.0.0.1:6379');
@@ -36,6 +38,25 @@ class UsersController {
         }).catch((error) => console.log(error));
       }
     });
+  }
+  static async getMe(request, response) {
+    const token = request.header('X-Token');
+    const key = `auth_${token}`;
+    const userId = await redisClient.get(key);
+    if (userId) {
+      const users = dbClient.db.collection('users');
+      const idObject = new ObjectID(userId);
+      users.findOne({ _id: idObject }, (err, user) => {
+        if (user) {
+          response.status(200).json({ id: userId, email: user.email });
+        } else {
+          response.status(401).json({ error: 'Unauthorized' });
+        }
+      });
+    } else {
+      console.log('Error in postNew');
+      response.status(401).json({ error: 'Unauthorized' });
+    }
   }
 }
 
