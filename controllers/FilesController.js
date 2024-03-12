@@ -234,7 +234,7 @@ class FilesController {
         }
         try {
           let fileName = file.localPath;
-          const size = request.param('size');
+          const size = request.param('size'); // accept a query parameter
           if (size) {
             fileName = `${file.localPath}_${size}`;
           }
